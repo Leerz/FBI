@@ -31,6 +31,7 @@ typedef enum {
 
 std::vector<std::string> extensions = {"cia"};
 
+bool deleteciaafter = false;
 bool exit = false;
 bool showNetworkPrompts = true;
 u64 freeSpace = 0;
@@ -351,7 +352,8 @@ bool onLoop() {
     }
 
     if(mode == INSTALL_CIA && hid::pressed(hid::BUTTON_Y)) {
-        networkInstall();
+        //networkInstall();
+		deleteciaafter = true;
     }
 
     if(hid::pressed(hid::BUTTON_SELECT)) {
@@ -384,7 +386,8 @@ bool onLoop() {
     stream << "L - Switch Destination, R - Switch Mode" << "\n";
     if(mode == INSTALL_CIA) {
         stream << "X - Install all CIAs in the current directory" << "\n";
-        stream << "Y - Receive an app over the network" << "\n";
+        //stream << "Y - Receive an app over the network" << "\n";
+		stream << "Y - Toggle delete CIA after install (per file only): " << deleteciaafter << "\n";
     } else if(mode == DELETE_CIA) {
         stream << "X - Delete all CIAs in the current directory" << "\n";
     }
@@ -487,8 +490,12 @@ int main(int argc, char **argv) {
                 confirmMsg << "the selected CIA?";
                 if(uiPrompt(gpu::SCREEN_TOP, confirmMsg.str(), true)) {
                     bool success = false;
+					bool delsuc = false;
                     if(mode == INSTALL_CIA) {
                         success = installCIA(destination, path, 1, 1);
+						if(deleteciaafter==true){
+							delsuc = deleteCIA(path, 1, 1);
+						}
                     } else {
                         success = deleteCIA(path, 1, 1);
                     }
@@ -500,9 +507,19 @@ int main(int argc, char **argv) {
                         } else {
                             successMsg << "Delete ";
                         }
-
-                        successMsg << "succeeded!";
+						
+                        successMsg << "succeeded!" << "\n";
+						if(deleteciaafter==true){
+							successMsg << "Deletion ";
+							if(delsuc==true){
+								successMsg << "succeeded! ";
+							}
+							else {
+								successMsg << "failed! ";
+							}
+						}
                         uiPrompt(gpu::SCREEN_TOP, successMsg.str(), false);
+						
                     }
 
                     freeSpace = fs::freeSpace(destination);
