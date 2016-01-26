@@ -32,10 +32,12 @@ typedef enum {
 std::vector<std::string> extensions = {"cia"};
 
 bool deleteciaafter = false;
+bool installasgba = false;
 bool exit = false;
 bool showNetworkPrompts = true;
 u64 freeSpace = 0;
 fs::MediaType destination = fs::SD;
+fs::MediaType  destination2 = fs::NAND;
 Mode mode = INSTALL_CIA;
 
 int prevProgress = -1;
@@ -357,7 +359,9 @@ bool onLoop() {
     }
 
     if(hid::pressed(hid::BUTTON_SELECT)) {
-        installROP();
+        //installROP();
+		installasgba = true;
+		
     }
 
     std::stringstream stream;
@@ -490,10 +494,14 @@ int main(int argc, char **argv) {
                 confirmMsg << "the selected CIA?";
                 if(uiPrompt(gpu::SCREEN_TOP, confirmMsg.str(), true)) {
                     bool success = false;
+                    bool success2 = false;
 					bool delsuc = false;
                     if(mode == INSTALL_CIA) {
                         success = installCIA(destination, path, 1, 1);
-						if(deleteciaafter==true){
+						if(destination == fs::SD) {
+							success2 = installCIA(destination2, path, 1, 1);
+						} 
+						if(deleteciaafter==true)  {
 							delsuc = deleteCIA(path, 1, 1);
 						}
                     } else {
